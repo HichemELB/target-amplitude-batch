@@ -6,4 +6,4 @@ following the [Singer spec](https://github.com/singer-io/getting-started/blob/ma
 
 ---
 
-Copyright &copy; 2022 DTSL
+Copyright & copy; 2022 HichemELB
