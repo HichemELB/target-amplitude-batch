@@ -5,7 +5,7 @@ import io
 import sys
 import json
 import logging
-import warnings
+import pytz
 from datetime import datetime
 from typing import Dict, Optional
 
@@ -53,7 +53,8 @@ def convert_to_timestamp_millis(dt) -> int:
     :param dt: DateTime object
     :return: epoch DateTime in milliseconds
     """
-    return int(datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+00:00").timestamp()) * 1000
+    dt = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+00:00").replace(tzinfo=pytz.utc)
+    return int(dt.timestamp()) * 1000
 
 
 def callback_function(event, code, message=None) -> None:
@@ -132,7 +133,7 @@ def persist_events(
                     )
 
                 # process events
-                if not config["is_identify_event"]:
+                if not config["is_batch_identify"]:
                     # Create a BaseEvent instance
                     if "event_type" not in event_raw.keys():
                         raise EventType(
@@ -150,7 +151,7 @@ def persist_events(
                         if key in event.__dict__:
                             event[key] = event_raw[key]
                         else:
-                            logger.warning("Unexpected event property: {}".format(key))
+                            logger.debug("Unexpected property: {}".format(key))
 
                     # Send event
                     amplitude_client.track(event)
@@ -173,7 +174,7 @@ def persist_events(
 
                     else:
                         raise IdentifyEvent(
-                            "Unexpected event property: \n{}".format(event_raw)
+                            "Unexpected property: \n{}".format(event_raw)
                         )
 
                 state = None
